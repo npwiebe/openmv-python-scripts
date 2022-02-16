@@ -25,11 +25,13 @@ sensor.skip_frames(time = 2000)
 uart = UART(3,9600)
 uart.init(9600, bits=8, parity=None, stop=1, timeout=1000, read_buf_len=64)
 clock = time.clock()
-counter =0;
+byte_array = bytearray([0xFF,0xFF,0xFF,0xFF])
 while (True):
     clock.tick()
-    counter = counter + 1
     img = sensor.snapshot().compress(quality=60)
     #print(img.size())
-    print(clock.fps())
+    #uart.write(struct.pack(">l", img.size()))
     uart.write(img)
+    uart.write(byte_array)
+    print(clock.fps())
+
