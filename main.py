@@ -13,9 +13,6 @@ import binascii
 net = tf.load('person_detection')
 labels = ['no person','person','unsure']
 
-cascade = image.HaarCascade("frontalface", stages=25)
-
-
 def camera_setup(framesize=sensor.QVGA, pixformat = sensor.GRAYSCALE):
     # Reset sensor
     sensor.reset()
@@ -26,23 +23,7 @@ def camera_setup(framesize=sensor.QVGA, pixformat = sensor.GRAYSCALE):
 
 camera_setup(framesize=sensor.HQVGA)
 
-extra_fb = sensor.alloc_extra_fb(sensor.width(),sensor.height(),sensor.RGB565)
-extra_fb.replace(sensor.snapshot())
-
-thresholds = []
-th1 = (58, 2, 63, -60, 52, -1)
-th2 = (55, 0, 127, -70, 127, 0)
-th3 = (91, 0, 66, -44, 96, 8)
-th4 = (100, 85, +22, -20, -20, +20) #watch
-th5 = (30, 53, -128, 39, -128, 63)
-
 BAUDRATE = 2400
-
-#thresholds.append(th1)
-#thresholds.append(th2)
-#thresholds.append(th2)
-thresholds.append(th5)
-
 
 # Always pass UART 3 for the UART number for your OpenMV Cam.
 # The second argument is the UART baud rate. For a more advanced UART control
@@ -79,24 +60,10 @@ def find_object(img,threshholds):
     for blob in blob_list:
         detect_occupancy(img,blob.rect())
 
-
-def find_persons_cascade(img,cascade):
-    kpts1 = None
-    print("test")
-    while (kpts1 == None):
-        img = sensor.snapshot()
-        img.draw_string(0, 0, "Looking for a body...")
-        objects = img.find_features(cascade, threshold=0.01, scale=1.1)
-        if objects:
-            person = (objects[0][0]-31, objects[0][1]-31,objects[0][2]+31*2, objects[0][3]+31*2)
-            kpts1 = img.find_keypoints(threshold=10, scale_factor=1.1, max_keypoints=100, roi=person)
-            img.draw_rectangle(objects[0])
-
 RUN = True
 while (RUN):
         clock.tick()
         img = sensor.snapshot()
-        #find_persons_cascade(img,cascade)
         if (detect_occupancy(img)):
             send_img(img,50)
             RUN = False
